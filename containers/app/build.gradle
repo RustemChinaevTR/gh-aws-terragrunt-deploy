@@ -1,0 +1,28 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+plugins {
+    id 'java'
+    id 'pl.allegro.tech.build.axion-release' version '1.13.6'
+}
+
+group 'org.example'
+version scmVersion.version
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+scmVersion {
+    repository {
+        directory = project.rootProject.file('../../')
+    }
+}
