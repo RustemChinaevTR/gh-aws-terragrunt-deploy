@@ -5,6 +5,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
+      - run: echo 'setup'
   frame-0:
     needs: setup
     uses: ./github/workflows/infra-deploy-stack.yml
