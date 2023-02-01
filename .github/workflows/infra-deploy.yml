@@ -1,6 +1,17 @@
 name: Infrastructure deploy
 on:
   workflow_dispatch:
+    inputs:
+      aws-environment:
+        required: true
+        type: choice
+        options: [ lab, dev, qa, ppe, prod ]
+      aws-region:
+        required: true
+        type: choice
+        options: [ us-east-1, eu-west-1 ]
+env:
+  ASSET_ID: a123456
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -12,6 +23,8 @@ jobs:
     with:
       working-directory: '["A", "B"]'
       github-environment: protected-lab
-      aws-region: us-east-1
+      aws-environment: ${{ inputs.aws-environment }}
+      aws-region: ${{ inputs.aws-region }}
       aws-assume-role: generated-aws-role-arn
+      asset-id: ${{ env.ASSET_ID }}
     secrets: inherit
