@@ -15,10 +15,12 @@ jobs:
         working-directory: ${{ fromJson(inputs.working-directory) }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo '${{ matrix.working-directory }}'
+      - run: echo 'plan ${{ matrix.working-directory }}'
   apply:
     needs: plan
     environment: ${{ inputs.github-environment }}
     strategy:
       matrix:
         working-directory: ${{ fromJson(inputs.working-directory) }}
+    steps:
+      - run: echo 'apply ${{ matrix.working-directory }}'
