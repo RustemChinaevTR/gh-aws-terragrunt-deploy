@@ -22,5 +22,6 @@ jobs:
     strategy:
       matrix:
         working-directory: ${{ fromJson(inputs.working-directory) }}
+    runs-on: ubuntu-latest
     steps:
       - run: echo 'apply ${{ matrix.working-directory }}'
