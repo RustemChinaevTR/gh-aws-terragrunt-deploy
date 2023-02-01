@@ -12,10 +12,10 @@ jobs:
       working-directory: ${{ steps.setVariables.outputs.matrix }}
     steps:
       - id: setVariables
+        shell: pwsh
         run: |
-          echo "::set-output name=matrix::$input"
-        env:
-          input: ${{ inputs.languageJson }}
+          echo "working-directory=${{ inputs.working-directory }}" >> $Env:GITHUB_OUTPUT
+        
 
   plan:
     needs: setup
