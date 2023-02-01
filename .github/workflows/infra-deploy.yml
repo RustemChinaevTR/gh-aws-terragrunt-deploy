@@ -26,5 +26,5 @@ jobs:
       aws-environment: ${{ inputs.aws-environment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: generated-aws-role-arn
-      #asset-id: a123456
+      asset-id: a123456
     secrets: inherit
