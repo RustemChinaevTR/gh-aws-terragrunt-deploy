@@ -23,7 +23,6 @@ on:
 env:
   TERRAGRUNT_VERSION: 0.42.5
   CICD_AWS_REGION: us-east-1
-  INFRA_ROOT: ./infrastructure
   SHORT_REGION_MAP: '{ "us-east-1": "us", "eu-west-1": "ie" }'
 jobs:
   plan:
