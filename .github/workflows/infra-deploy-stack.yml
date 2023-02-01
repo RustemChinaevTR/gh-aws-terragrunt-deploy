@@ -1,0 +1,27 @@
+name: Deploy infrastructure stack
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string # json-array
+        required: true
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      working-directory: ${{ steps.setVariables.outputs.matrix }}
+    steps:
+      - id: setVariables
+        run: |
+          echo "::set-output name=matrix::$input"
+        env:
+          input: ${{ inputs.languageJson }}
+
+  plan:
+    needs: setup
+    strategy:
+      matrix:
+        working-directory: ${{ fromJson(needs.setup.outputs.working-directory) }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ matrix.working-directory }}'

@@ -1,0 +1,13 @@
+name: Infrastructure deploy
+on:
+  workflow_dispatch:
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+  frame-0:
+    needs: setup
+    runs-on: ubuntu-latest
+    uses: ./github/workflows/infra-deploy-stack.yml
+    with:
+      working-directory: '["A", "B"]'
