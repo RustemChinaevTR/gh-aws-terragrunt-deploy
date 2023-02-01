@@ -14,9 +14,9 @@ on:
       aws-assume-role:
         type: string
         required: true
-      asset-id:
-        type: string
-        required: true
+#      asset-id:
+#        type: string
+#        required: true
       aws-environment:
         type: string
         required: true
