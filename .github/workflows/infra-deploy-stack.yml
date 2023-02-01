@@ -34,149 +34,150 @@ jobs:
         working-directory: ${{ fromJson(inputs.working-directory) }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Setup terragrunt
-        uses: autero1/action-terragrunt@v1.2.0
-        with:
-          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
-
-      - name: Setup sops
-        uses: mdgreenwald/mozilla-sops-action@v1.4.0
-
-      - name: Configure CICD AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.CICD_AWS_REGION }}
-
-      - name: Decrypt files
-        shell: pwsh
-        working-directory: ${{ env.INFRA_ROOT }}
-        run: |
-          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ inputs.aws-region }}
-          role-to-assume: ${{ inputs.aws-assume-role }}
-          role-session-name: session-${{ inputs.github-environment }}
-
-      - name: Setup env
-        id: setup-env
-        shell: pwsh
-        run: |
-          
-          if ('${{ matrix.working-directory }}' -like '*/regional/*') 
-          {
-            $Region = (ConvertFrom-Json '${{ env.SHORT_REGION_MAP}}')[${{ inputs.aws-region }}] 
-          }
-          else
-          {
-            $Region = 'global'
-          }
-          $Value = "${{ inputs.asset-id }}-$Region-${{ inputs.aws-environment }}"
-          
-          echo "value=$Value" >> $Env:GITHUB_OUTPUT
-
-      - name: Terragrunt plan
-        id: plan
-        env:
-          ENV: ${{ steps.setup-env.outputs.value }}
-        working-directory: ${{ matrix.working-directory }}
-        run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
-
-      - name: Terragrunt show plan
-        env:
-          ENV: TODO
-        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        working-directory: ${{ matrix.working-directory }}
-        shell: pwsh
-        run: |
-          $plan = terragrunt show -no-color plan.out
-          @"
-          ``````diff
-          $((terraform show -no-color plan.out | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n")   
-          ``````
-          "@ >> $env:GITHUB_STEP_SUMMARY
-
-      - id: upload-file-name
-        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        shell: pwsh
-        run: echo "value=$('${{ matrix.working-directory }}' -replace '/', '-')"
-
-      - uses: actions/upload-artifact@v3
-        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        with:
-          name: ${{ steps.upload-file-name.outputs.value }}
-          path: ${{ matrix.working-directory }}/plan.out
-
-  apply:
-    needs: plan
-    environment: ${{ inputs.github-environment }}
-    if: ${{ needs.plan.outputs.exitcode == 2 }}
-    strategy:
-      matrix:
-        working-directory: ${{ fromJson(inputs.working-directory) }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Setup terragrunt
-        uses: autero1/action-terragrunt@v1.2.0
-        with:
-          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
-
-      - name: Setup sops
-        uses: mdgreenwald/mozilla-sops-action@v1.4.0
-
-      - name: Configure CICD AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.CICD_AWS_REGION }}
-
-      - name: Decrypt files
-        shell: pwsh
-        working-directory: ${{ env.INFRA_ROOT }}
-        run: |
-          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ inputs.aws-region }}
-          role-to-assume: ${{ inputs.aws-assume-role }}
-          role-session-name: session-${{ inputs.github-environment }}
-
-      - id: download-file-name
-        shell: pwsh
-        run: echo "value=$('${{ matrix.working-directory }}' -replace '/', '-')"
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: ${{ steps.download-file-name.outputs.value }}
-          path: ${{ matrix.working-directory }}
-
-      - name: Terragrunt apply
-        working-directory: ${{ matrix.working-directory }}
-        run: terragrunt apply plan.out
+      - run: echo '${{ toJson(inputs) }}'
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#
+#      - name: Setup terraform
+#        uses: hashicorp/setup-terraform@v2
+#
+#      - name: Setup terragrunt
+#        uses: autero1/action-terragrunt@v1.2.0
+#        with:
+#          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+#
+#      - name: Setup sops
+#        uses: mdgreenwald/mozilla-sops-action@v1.4.0
+#
+#      - name: Configure CICD AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ env.CICD_AWS_REGION }}
+#
+#      - name: Decrypt files
+#        shell: pwsh
+#        working-directory: ${{ env.INFRA_ROOT }}
+#        run: |
+#          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
+#
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ inputs.aws-region }}
+#          role-to-assume: ${{ inputs.aws-assume-role }}
+#          role-session-name: session-${{ inputs.github-environment }}
+#
+#      - name: Setup env
+#        id: setup-env
+#        shell: pwsh
+#        run: |
+#
+#          if ('${{ matrix.working-directory }}' -like '*/regional/*')
+#          {
+#            $Region = (ConvertFrom-Json '${{ env.SHORT_REGION_MAP}}')[${{ inputs.aws-region }}]
+#          }
+#          else
+#          {
+#            $Region = 'global'
+#          }
+#          $Value = "${{ inputs.asset-id }}-$Region-${{ inputs.aws-environment }}"
+#
+#          echo "value=$Value" >> $Env:GITHUB_OUTPUT
+#
+#      - name: Terragrunt plan
+#        id: plan
+#        env:
+#          ENV: ${{ steps.setup-env.outputs.value }}
+#        working-directory: ${{ matrix.working-directory }}
+#        run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
+#
+#      - name: Terragrunt show plan
+#        env:
+#          ENV: TODO
+#        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+#        working-directory: ${{ matrix.working-directory }}
+#        shell: pwsh
+#        run: |
+#          $plan = terragrunt show -no-color plan.out
+#          @"
+#          ``````diff
+#          $((terraform show -no-color plan.out | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n")
+#          ``````
+#          "@ >> $env:GITHUB_STEP_SUMMARY
+#
+#      - id: upload-file-name
+#        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+#        shell: pwsh
+#        run: echo "value=$('${{ matrix.working-directory }}' -replace '/', '-')"
+#
+#      - uses: actions/upload-artifact@v3
+#        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+#        with:
+#          name: ${{ steps.upload-file-name.outputs.value }}
+#          path: ${{ matrix.working-directory }}/plan.out
+#
+#  apply:
+#    needs: plan
+#    environment: ${{ inputs.github-environment }}
+#    if: ${{ needs.plan.outputs.exitcode == 2 }}
+#    strategy:
+#      matrix:
+#        working-directory: ${{ fromJson(inputs.working-directory) }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#
+#      - name: Setup terraform
+#        uses: hashicorp/setup-terraform@v2
+#
+#      - name: Setup terragrunt
+#        uses: autero1/action-terragrunt@v1.2.0
+#        with:
+#          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+#
+#      - name: Setup sops
+#        uses: mdgreenwald/mozilla-sops-action@v1.4.0
+#
+#      - name: Configure CICD AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ env.CICD_AWS_REGION }}
+#
+#      - name: Decrypt files
+#        shell: pwsh
+#        working-directory: ${{ env.INFRA_ROOT }}
+#        run: |
+#          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
+#
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ inputs.aws-region }}
+#          role-to-assume: ${{ inputs.aws-assume-role }}
+#          role-session-name: session-${{ inputs.github-environment }}
+#
+#      - id: download-file-name
+#        shell: pwsh
+#        run: echo "value=$('${{ matrix.working-directory }}' -replace '/', '-')"
+#
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: ${{ steps.download-file-name.outputs.value }}
+#          path: ${{ matrix.working-directory }}
+#
+#      - name: Terragrunt apply
+#        working-directory: ${{ matrix.working-directory }}
+#        run: terragrunt apply plan.out
