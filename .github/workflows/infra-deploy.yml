@@ -12,3 +12,6 @@ jobs:
     with:
       working-directory: '["A", "B"]'
       github-environment: protected-lab
+      aws-region: us-east-1
+      aws-assume-role: generated-aws-role-arn
+    secrets: inherit

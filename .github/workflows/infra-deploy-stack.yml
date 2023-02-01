@@ -8,6 +8,16 @@ on:
       github-environment:
         type: string
         required: true
+      aws-region:
+        type: string
+        required: true
+      aws-assume-role:
+        type: string
+        required: true
+env:
+  TERRAGRUNT_VERSION: 0.42.5
+  CICD_AWS_REGION: us-east-1
+  INFRA_ROOT: ./infrastructure
 jobs:
   plan:
     strategy:
@@ -15,7 +25,69 @@ jobs:
         working-directory: ${{ fromJson(inputs.working-directory) }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo 'plan ${{ matrix.working-directory }}'
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Setup terragrunt
+        uses: autero1/action-terragrunt@v1.2.0
+        with:
+          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+
+      - name: Setup sops
+        uses: mdgreenwald/mozilla-sops-action@v1.4.0
+
+      - name: Configure CICD AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.CICD_AWS_REGION }}
+
+      - name: Decrypt files
+        shell: pwsh
+        working-directory: ${{ env.INFRA_ROOT }}
+        run: |
+          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.aws-assume-role }}
+          role-session-name: session-${{ inputs.github-environment }}
+
+      - name: Terragrunt plan
+        id: plan
+        env: ${{ fromJson(steps.prep-env.outputs.TG_ENV) }}
+        working-directory: ${{ inputs.working-directory }}
+        run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
+
+      - name: Terragrunt show plan
+        env: ${{ fromJson(steps.prep-env.outputs.TG_ENV) }}
+        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+        working-directory: ${{ inputs.working-directory }}
+        shell: pwsh
+        run: |
+          $plan = terragrunt show -no-color plan.out
+          @"
+          ``````diff
+          $((terraform show -no-color plan.out | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n")   
+          ``````
+          "@ >> $env:GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@v3
+        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+        with:
+          name: ${{ steps.prep-env.outputs.PLAN_PATH }}
+          path: ${{ inputs.working-directory }}/plan.out
+
   apply:
     needs: plan
     environment: ${{ inputs.github-environment }}
