@@ -8,6 +8,6 @@ jobs:
       - run: echo 'setup'
   frame-0:
     needs: setup
-    uses: ./github/workflows/infra-deploy-stack.yml
+    uses: ./.github/workflows/infra-deploy-stack.yml
     with:
       working-directory: '["A", "B"]'
