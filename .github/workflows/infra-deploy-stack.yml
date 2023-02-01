@@ -5,18 +5,10 @@ on:
       working-directory:
         type: string # json-array
         required: true
+      github-environment:
+        type: string
+        required: true
 jobs:
-#  setup:
-#    runs-on: ubuntu-latest
-#    outputs:
-#      working-directory: ${{ steps.setVariables.outputs.matrix }}
-#    steps:
-#      - id: setVariables
-#        shell: pwsh
-#        run: |
-#          echo "working-directory=${{ inputs.working-directory }}" >> $Env:GITHUB_OUTPUT
-#
-
   plan:
     strategy:
       matrix:
@@ -24,3 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo '${{ matrix.working-directory }}'
+  apply:
+    needs: plan
+    environment: ${{ inputs.github-environment }}
+    strategy:
+      matrix:
+        working-directory: ${{ fromJson(inputs.working-directory) }}
