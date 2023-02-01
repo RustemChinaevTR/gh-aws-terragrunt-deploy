@@ -21,7 +21,7 @@ jobs:
     needs: setup
     uses: ./.github/workflows/infra-deploy-stack.yml
     with:
-      working-directory: '["A", "B"]'
+      working-directory: '["./infrastructure/manifest/app-name/global/global-module-1"]'
       github-environment: protected-lab
       aws-environment: ${{ inputs.aws-environment }}
       aws-region: ${{ inputs.aws-region }}
