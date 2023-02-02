@@ -5,8 +5,8 @@ remote_state {
     if_exists = "overwrite_terragrunt"
   }
   config = {
-    dynamodb_table          = "rustem-chinaev-mne-terraform-state"
-    bucket                  = "rustem-chinaev-mne-terraform-state"
+    dynamodb_table          = "rustem-chinaev-mne-tf-state"
+    bucket                  = "rustem-chinaev-mne-tf-state"
     key                     = "${path_relative_to_include()}/terraform.tfstate"
     skip_bucket_root_access = true
     workspace_key_prefix    = "env"
