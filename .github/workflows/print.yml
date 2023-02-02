@@ -4,8 +4,10 @@ on:
     inputs:
       path:
         type: string
+      env:
+        type: string
 jobs:
   print:
     runs-on: ubuntu-latest
     steps:
-      - run: echo '${{ inputs.path }}'
+      - run: echo '${{ inputs.path }} - ${{ inputs.env }}'

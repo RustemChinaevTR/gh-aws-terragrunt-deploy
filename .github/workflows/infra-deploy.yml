@@ -18,6 +18,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
+      stacks: ${{ steps.setup.outputs.stacks }}
       stacksGroups: ${{ steps.setup.outputs.stacksGroups }}
     steps:
       - name: Checkout
@@ -32,6 +33,7 @@ jobs:
               $Env = "a123456-$Region-${{ inputs.aws-environment }}"
               [pscustomobject]@{
                                  Path = $_.Directory.FullName
+                                 Env = $Env
                                  Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
                }
           }
@@ -40,6 +42,7 @@ jobs:
               Group-Object -Property GroupId -AsHashTable -AsString
   
           echo "stacksGroups=$($Groups | ConvertTo-Json -Compress)" >> $Env:GITHUB_OUTPUT
+          echo "stacks=$($Stacks | Group-Object Path -AsHashTable -AsString | ConvertTo-Json -Compress)" >> $Env:GITHUB_OUTPUT
           echo "terragruntEnvVar=$()" >> $Env:GITHUB_OUTPUT
 #  group-0:
 #    needs: setup
@@ -58,3 +61,4 @@ jobs:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
     with:
       path: ${{ matrix.path }}
+      env: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path].Env }}
