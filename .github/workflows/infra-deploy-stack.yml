@@ -20,21 +20,15 @@ on:
       aws-environment:
         type: string
         required: true
+      terragrunt-env-var:
+        type: string
+        required: true
 env:
   TERRAGRUNT_VERSION: 0.42.5
   CICD_AWS_REGION: us-east-1
   SHORT_REGION_MAP: '{ "us-east-1": "us", "eu-west-1": "ie" }'
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - id: environment
-        shell: pwsh
-        run: |
-          $Env = 
-          echo "ENV=$Env" >> $Env:GITHUB_OUTPUT
   plan:
-    need: setup
     outputs:
       exitcode: ${{ steps.plan.outputs.exitcode }}
     runs-on: ubuntu-latest

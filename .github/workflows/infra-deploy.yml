@@ -13,6 +13,7 @@ on:
 env:
   ASSET_ID: a123456
   INFRA_PATH: ./infrastructure/manifest/app-name
+  SHORT_REGION_MAP: '{ "us-east-1": "us"; "eu-west-1": "ie" }'
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -25,36 +26,35 @@ jobs:
         working-directory: ${{ env.INFRA_PATH }}
         shell: pwsh
         run: |
-          $Groups = @{}
-
-          Get-ChildItem -Filter "gh-deployment.properties" -Recurse | ForEach-Object { 
-              $Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
-
-              $GroupId = $Properties['group-id']
-
-              if (!$Groups.ContainsKey($GroupId))
-              {
-                  $Groups.Add($GroupId, @()) | Out-Null
-              }
-
-              $Groups[$GroupId] += $_.Directory.FullName
+          $Stacks = Get-ChildItem -Filter "gh-deployment.properties" -Recurse | ForEach-Object {
+              $Region = if ($_.FullName -like '*/global/*') { 'global' } else { (ConvertFrom-Json '${{ env.SHORT_REGION_MAP }}')['${{ inputs.aws-region }}'] }
+              
+              $Env = "a123456-$Region-${{ inputs.aws-environment }}"
+              [pscustomobject]@{
+                                 Path = $_.Directory.FullName
+                                 Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
+               }
           }
           
+          $Groups = $Stacks | Select Path, @{Name = 'GroupId'; Expression = {$_.Properties['group-id']}} | `
+              Group-Object -Property GroupId -AsHashTable -AsString
+  
           echo "stacksGroups=$($Groups | ConvertTo-Json -Compress)" >> $Env:GITHUB_OUTPUT
-
-  group-0:
-    needs: setup
-    uses: ./.github/workflows/print.yml
-    strategy:
-      matrix:
-        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'] }}
-    with:
-      path: ${{ matrix.path }}
+          echo "terragruntEnvVar=$()" >> $Env:GITHUB_OUTPUT
+#  group-0:
+#    needs: setup
+#    uses: ./.github/workflows/infra-deploy-stack.yml
+#    strategy:
+#      matrix:
+#        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'].*.Path }}
+#    with:
+#      path: ${{ matrix.path }}
+#      terragrunt-env-var:
   group-1:
     needs: [setup, group-0]
     uses: ./.github/workflows/print.yml
     strategy:
       matrix:
-        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'] }}
+        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
     with:
       path: ${{ matrix.path }}
