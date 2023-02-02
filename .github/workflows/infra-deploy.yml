@@ -46,4 +46,4 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - run: echo '${{ needs.setup.outputs.stacksGroups }}'
+      - run: echo '${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'] }}'
