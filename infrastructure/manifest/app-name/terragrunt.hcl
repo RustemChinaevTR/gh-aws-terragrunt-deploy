@@ -1,15 +1,17 @@
-generate "backend" {
-  path      = "backend.tf"
-  if_exists = "overwrite_terragrunt"
-  contents = <<EOF
-terraform {
-  backend "s3" {
-    bucket         = "rustem-chinaev-mne-tf-state"
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "my-lock-table"
+remote_state {
+  backend  = "s3"
+  generate = {
+    path      = "_backend.tf"
+    if_exists = "overwrite_terragrunt"
   }
-}
-EOF
+  config = {
+    dynamodb_table          = "rustem-chinaev-mne-terraform-state"
+    bucket                  = "rustem-chinaev-mne-terraform-state"
+    key                     = "${path_relative_to_include()}/terraform.tfstate"
+    skip_bucket_root_access = true
+    workspace_key_prefix    = "env"
+    region                  = "us-east-1"
+    encrypt                 = true
+  }
+  disable_dependency_optimization = true
 }
