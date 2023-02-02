@@ -21,7 +21,6 @@ jobs:
     steps:
       - id: setup
         shell: pwsh
-        working-directory: ${{ env.INFRA_PATH }}
         run: |
           $Groups = @{}
 
