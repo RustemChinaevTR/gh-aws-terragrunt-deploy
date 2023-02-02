@@ -14,19 +14,12 @@ on:
       aws-assume-role:
         type: string
         required: true
-      asset-id:
-        type: string
-        required: true
-      aws-environment:
-        type: string
-        required: true
       terragrunt-env-var:
         type: string
         required: true
 env:
   TERRAGRUNT_VERSION: 0.42.5
   CICD_AWS_REGION: us-east-1
-  SHORT_REGION_MAP: '{ "us-east-1": "us", "eu-west-1": "ie" }'
 jobs:
   plan:
     outputs:

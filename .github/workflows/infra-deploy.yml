@@ -14,6 +14,7 @@ env:
   ASSET_ID: a123456
   INFRA_PATH: ./infrastructure/manifest/app-name
   SHORT_REGION_MAP: '{ "us-east-1": "us", "eu-west-1": "ie" }'
+  GITHUB_ENV_MAP: '{ "lab": "protected-lab", "qa": "protected-qa" }'
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -33,6 +34,7 @@ jobs:
             [pscustomobject]@{
               Path = $_.Directory.FullName
               Env = $Env
+              GithubEnvironment = (ConvertFrom-Json '${{ env.GITHUB_ENV_MAP }}').'${{ inputs.aws-environment }}'
               Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
             }
           }
@@ -43,15 +45,19 @@ jobs:
           echo "stacksGroups=$($Groups | ConvertTo-Json -Compress)" >> $Env:GITHUB_OUTPUT
           echo "stacks=$($Stacks | Group-Object Path -AsHashTable -AsString | ConvertTo-Json -Compress)" >> $Env:GITHUB_OUTPUT
           echo "terragruntEnvVar=$()" >> $Env:GITHUB_OUTPUT
-#  group-0:
-#    needs: setup
-#    uses: ./.github/workflows/infra-deploy-stack.yml
-#    strategy:
-#      matrix:
-#        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'].*.Path }}
-#    with:
-#      path: ${{ matrix.path }}
-#      terragrunt-env-var:
+  group-0:
+    needs: setup
+    uses: ./.github/workflows/infra-deploy-stack.yml
+    strategy:
+      matrix:
+        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'].*.Path }}
+    with:
+      working-directory: ${{ matrix.path }}
+      github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
+      aws-region: ${{ inputs.aws-region }}
+      aws-assume-role: TODO
+      terragrunt-env-var: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
+
   group-1:
     needs: [setup ]
     uses: ./.github/workflows/print.yml
