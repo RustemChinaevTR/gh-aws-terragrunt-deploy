@@ -45,6 +45,9 @@ jobs:
   group-0:
     needs: setup
     uses: ./.github/workflows/print.yml
+    strategy:
+      matrix:
+        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'] }}
     with:
-      path: dummy-valuer
+      path: ${{ matrix.path }}
 
