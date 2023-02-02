@@ -10,4 +10,4 @@ jobs:
   print:
     runs-on: ubuntu-latest
     steps:
-      - run: echo '${{ inputs.path }} - ${{ inputs.env }}'
+      - run: echo '${{ inputs.env }}'
