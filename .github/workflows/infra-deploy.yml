@@ -28,12 +28,11 @@ jobs:
         shell: pwsh
         run: |
           $Stacks = Get-ChildItem -Filter "gh-deployment.properties" -Recurse | ForEach-Object {
-          
-            $Region = $_.FullName -like '*/global/*' ? 'global' :  (ConvertFrom-Json '${{ env.SHORT_REGION_MAP }}')['${{ inputs.aws-region }}']
-        
-              
-              $Env = "a123456-$Region-${{ inputs.aws-environment }}"
-              [pscustomobject]@{
+          Write-Host ( ConvertFrom-Json '${{ env.SHORT_REGION_MAP }}')
+          Write-Host '${{ inputs.aws-region }}'
+          $Region = $_.FullName -like '*/global/*' ? 'global' :  (ConvertFrom-Json '${{ env.SHORT_REGION_MAP }}')['${{ inputs.aws-region }}']
+          $Env = "a123456-$Region-${{ inputs.aws-environment }}"
+          [pscustomobject]@{
                                  Path = $_.Directory.FullName
                                  Env = $Env
                                  Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
