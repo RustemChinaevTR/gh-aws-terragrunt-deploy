@@ -61,4 +61,4 @@ jobs:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
     with:
       path: ${{ matrix.path }}
-      env: ${{ toJson(fromJson(needs.setup.outputs.stacks)[matrix.path]) }}
+      env: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
