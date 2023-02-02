@@ -51,7 +51,7 @@ jobs:
 #      path: ${{ matrix.path }}
 #      terragrunt-env-var:
   group-1:
-    needs: [setup, group-0]
+    needs: [setup ]
     uses: ./.github/workflows/print.yml
     strategy:
       matrix:
