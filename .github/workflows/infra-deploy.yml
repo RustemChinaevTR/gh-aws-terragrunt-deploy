@@ -48,5 +48,7 @@ jobs:
     strategy:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'] }}
-    steps:
-      - run: echo '${{ matrix.path }}'
+    uses: ./.github/workflows/print.yml
+    with:
+      path: $${{ matrix.path }}
+
