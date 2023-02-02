@@ -82,7 +82,7 @@ jobs:
           $Plan = (terraform show -no-color plan.out | %{ 
             if ($_ -match '^\s+([+-~])')
             {
-              "$($matches[1])$matches[0]"
+              "$($matches[1])$_"
             }
             else
             {
