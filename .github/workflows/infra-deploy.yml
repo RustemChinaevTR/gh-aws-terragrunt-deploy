@@ -12,7 +12,7 @@ on:
         options: [ us-east-1, eu-west-1 ]
 env:
   ASSET_ID: a123456
-  INFRA_PATH: infrastructure/manifest/app-name
+  INFRA_PATH: ../infrastructure/manifest/app-name
 jobs:
   setup:
     runs-on: ubuntu-latest
