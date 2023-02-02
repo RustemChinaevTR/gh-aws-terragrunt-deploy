@@ -75,9 +75,9 @@ jobs:
         run: |
           terragrunt plan -detailed-exitcode -out=plan.out -input=false
           $TG_EXIT_CODE = $LASTEXITCODE
-          Write-Host "Terragrunt exit code: $TG_EXIT_CODE" -Color Cyan 
+          #Write-Host "Terragrunt exit code: $TG_EXIT_CODE" -Color Cyan 
           if ($TG_EXIT_CODE -eq 1) { exit $TG_EXIT_CODE }
-          echo "outdated=$($TG_EXIT_CODE -eq 2)"
+          echo "outdated=$($TG_EXIT_CODE -eq 2)" >> $Env:GITHUB_OUTPUT
 
       - run: echo '${{ steps.plan.outputs.outdated }}'
 #
