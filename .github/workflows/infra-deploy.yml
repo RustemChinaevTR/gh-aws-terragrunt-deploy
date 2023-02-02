@@ -51,7 +51,7 @@ jobs:
     with:
       path: ${{ matrix.path }}
   group-1:
-    needs: setup
+    needs: [setup, group-0]
     uses: ./.github/workflows/print.yml
     strategy:
       matrix:
