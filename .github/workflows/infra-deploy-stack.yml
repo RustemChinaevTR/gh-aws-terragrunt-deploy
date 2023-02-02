@@ -79,17 +79,16 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
-          $plan = terragrunt show -no-color plan.out
           @"
           ``````diff
-          $((terraform show -no-color plan.out | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n")
+          $((terraform show -no-color plan.out | %{ $_.Trim() } | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n")
           ``````
           "@ >> $env:GITHUB_STEP_SUMMARY
 
       - id: upload-file-name
         if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
         shell: pwsh
-        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')"
+        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')" >> $Env:GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v3
         if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
