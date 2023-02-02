@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       working-directory:
-        type: string # json-array
+        type: string
         required: true
       github-environment:
         type: string
@@ -25,7 +25,16 @@ env:
   CICD_AWS_REGION: us-east-1
   SHORT_REGION_MAP: '{ "us-east-1": "us", "eu-west-1": "ie" }'
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - id: environment
+        shell: pwsh
+        run: |
+          $Env = 
+          echo "ENV=$Env" >> $Env:GITHUB_OUTPUT
   plan:
+    need: setup
     outputs:
       exitcode: ${{ steps.plan.outputs.exitcode }}
     strategy:

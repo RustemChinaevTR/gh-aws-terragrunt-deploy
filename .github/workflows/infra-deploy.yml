@@ -12,19 +12,35 @@ on:
         options: [ us-east-1, eu-west-1 ]
 env:
   ASSET_ID: a123456
+  INFRA_PATH: ./infrastructure/manifest/app-name
 jobs:
   setup:
     runs-on: ubuntu-latest
+    outputs:
+      stacksGroups: ${{ steps.setup.outputs.stacksGroups }}
     steps:
-      - run: echo 'setup'
-  frame-0:
+      - id: setup
+        shell: pwsh
+        working-directory: ${{ env.INFRA_PATH }}
+        run: |
+          $Groups = @{}
+
+          Get-ChildItem -Filter "gh-deployment.properties" -Recurse | ForEach-Object { 
+              $Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
+
+              $GroupId = $Properties['group-id']
+
+              if (!$Groups.ContainsKey($GroupId))
+              {
+                  $Groups.Add($GroupId, @()) | Out-Null
+              }
+
+              $Groups[$GroupId] += $_.Directory.FullName
+          }
+          
+          echo "stacksGroups=$($Groups | ConvertTo-Json -Compress)" >> $Env:GITHUB_OUTPUT
+
+  group-0:
     needs: setup
-    uses: ./.github/workflows/infra-deploy-stack.yml
-    with:
-      working-directory: '["./infrastructure/manifest/app-name/global/global-module-1"]'
-      github-environment: protected-lab
-      aws-environment: ${{ inputs.aws-environment }}
-      aws-region: ${{ inputs.aws-region }}
-      aws-assume-role: generated-aws-role-arn
-      asset-id: a123456
-    secrets: inherit
+    steps:
+      - run: echo '${{ needs.setup.outputs.stacksGroups }}'
