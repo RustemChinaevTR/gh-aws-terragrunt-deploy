@@ -37,9 +37,6 @@ jobs:
     need: setup
     outputs:
       exitcode: ${{ steps.plan.outputs.exitcode }}
-    strategy:
-      matrix:
-        working-directory: ${{ fromJson(inputs.working-directory) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -83,7 +80,7 @@ jobs:
         shell: pwsh
         run: |
 
-          if ('${{ matrix.working-directory }}' -like '*/regional/*')
+          if ('${{ inputs.working-directory }}' -like '*/regional/*')
           {
             $Region = (ConvertFrom-Json '${{ env.SHORT_REGION_MAP}}')[${{ inputs.aws-region }}]
           }
@@ -99,14 +96,14 @@ jobs:
         id: plan
         env:
           ENV: ${{ steps.setup-env.outputs.value }}
-        working-directory: ${{ matrix.working-directory }}
+        working-directory: ${{ inputs.working-directory }}
         run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
 
       - name: Terragrunt show plan
         env:
           ENV: TODO
         if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        working-directory: ${{ matrix.working-directory }}
+        working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
           $plan = terragrunt show -no-color plan.out
@@ -119,13 +116,13 @@ jobs:
       - id: upload-file-name
         if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
         shell: pwsh
-        run: echo "value=$('${{ matrix.working-directory }}' -replace '/', '-')"
+        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')"
 
       - uses: actions/upload-artifact@v3
         if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
         with:
           name: ${{ steps.upload-file-name.outputs.value }}
-          path: ${{ matrix.working-directory }}/plan.out
+          path: ${{ inputs.working-directory }}/plan.out
 
 #  apply:
 #    needs: plan
@@ -176,13 +173,13 @@ jobs:
 #
 #      - id: download-file-name
 #        shell: pwsh
-#        run: echo "value=$('${{ matrix.working-directory }}' -replace '/', '-')"
+#        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')"
 #
 #      - uses: actions/download-artifact@v2
 #        with:
 #          name: ${{ steps.download-file-name.outputs.value }}
-#          path: ${{ matrix.working-directory }}
+#          path: ${{ inputs.working-directory }}
 #
 #      - name: Terragrunt apply
-#        working-directory: ${{ matrix.working-directory }}
+#        working-directory: ${{ inputs.working-directory }}
 #        run: terragrunt apply plan.out
