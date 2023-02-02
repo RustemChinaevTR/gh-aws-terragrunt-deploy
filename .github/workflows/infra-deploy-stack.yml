@@ -69,23 +69,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.aws-region }}
 
-      - name: Setup env
-        id: setup-env
-        shell: pwsh
-        run: |
-
-          if ('${{ inputs.working-directory }}' -like '*/regional/*')
-          {
-            $Region = (ConvertFrom-Json '${{ env.SHORT_REGION_MAP}}')[${{ inputs.aws-region }}]
-          }
-          else
-          {
-            $Region = 'global'
-          }
-          $Value = "${{ inputs.asset-id }}-$Region-${{ inputs.aws-environment }}"
-
-          echo "value=$Value" >> $Env:GITHUB_OUTPUT
-
       - name: Terragrunt plan
         id: plan
         env:
@@ -95,7 +78,7 @@ jobs:
 
       - name: Terragrunt show plan
         env:
-          ENV: TODO
+          ENV: ${{ inputs.terragrunt-env-var }}
         if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
