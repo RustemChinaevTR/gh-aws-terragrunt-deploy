@@ -66,6 +66,9 @@ jobs:
         id: plan
         env:
           ENV: ${{ steps.setup-env.outputs.value }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws-region }}
         working-directory: ${{ inputs.working-directory }}
         run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
 
