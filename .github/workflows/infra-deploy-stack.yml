@@ -72,96 +72,102 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.aws-region }}
         working-directory: ${{ inputs.working-directory }}
-        run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
-        continue-on-error: true
-
-      - name: Terragrunt show plan
-        env:
-          ENV: ${{ inputs.terragrunt-env-var }}
-        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        working-directory: ${{ inputs.working-directory }}
-        shell: pwsh
         run: |
-          $Plan = (terraform show -no-color plan.out | %{ 
-            if ($_ -match '^\s+([+-~])')
-            {
-              "$($matches[1])$_"
-            }
-            else
-            {
-              $_
-            }
-          } | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n"
-          @"
-          ``````diff
-          $Plan
-          ``````
-          "@ >> $env:GITHUB_STEP_SUMMARY
+          terragrunt plan -detailed-exitcode -out=plan.out -input=false
+          $TG_EXIT_CODE = $LASTEXITCODE
+          Write-Host "Terragrunt exit code: $TG_EXIT_CODE" -Color Cyan 
+          if ($TG_EXIT_CODE -eq 1) { exit $TG_EXIT_CODE }
+          echo "outdated=$($TG_EXIT_CODE -eq 2)"
 
-      - id: upload-file-name
-        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        shell: pwsh
-        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')" >> $Env:GITHUB_OUTPUT
-
-      - uses: actions/upload-artifact@v3
-        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
-        with:
-          name: ${{ steps.upload-file-name.outputs.value }}
-          path: ${{ inputs.working-directory }}/plan.out
-
-  apply:
-    needs: plan
-    environment: ${{ inputs.github-environment }}
-    if: ${{ needs.plan.outputs.exitcode == 2 }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
-
-      - name: Setup terragrunt
-        uses: autero1/action-terragrunt@v1.2.0
-        with:
-          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
-
-      - name: Setup sops
-        uses: mdgreenwald/mozilla-sops-action@v1.4.0
-
-      - name: Configure CICD AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.CICD_AWS_REGION }}
-
-      - name: Decrypt files
-        shell: pwsh
-        working-directory: ${{ env.INFRA_ROOT }}
-        run: |
-          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ inputs.aws-region }}
-
-      - id: download-file-name
-        shell: pwsh
-        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')" >> $Env:GITHUB_OUTPUT
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: ${{ steps.download-file-name.outputs.value }}
-          path: ${{ inputs.working-directory }}
-
-      - name: Terragrunt apply
-        working-directory: ${{ inputs.working-directory }}
-        run: terragrunt apply plan.out
+      - run: echo '${{ steps.plan.outputs.outdated }}'
+#
+#      - name: Terragrunt show plan
+#        env:
+#          ENV: ${{ inputs.terragrunt-env-var }}
+#        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+#        working-directory: ${{ inputs.working-directory }}
+#        shell: pwsh
+#        run: |
+#          $Plan = (terraform show -no-color plan.out | %{
+#            if ($_ -match '^\s+([+-~])')
+#            {
+#              "$($matches[1])$_"
+#            }
+#            else
+#            {
+#              $_
+#            }
+#          } | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n"
+#          @"
+#          ``````diff
+#          $Plan
+#          ``````
+#          "@ >> $env:GITHUB_STEP_SUMMARY
+#
+#      - id: upload-file-name
+#        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+#        shell: pwsh
+#        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')" >> $Env:GITHUB_OUTPUT
+#
+#      - uses: actions/upload-artifact@v3
+#        if: success() && ${{ steps.plan.outputs.exitcode == 2 }}
+#        with:
+#          name: ${{ steps.upload-file-name.outputs.value }}
+#          path: ${{ inputs.working-directory }}/plan.out
+#
+#  apply:
+#    needs: plan
+#    environment: ${{ inputs.github-environment }}
+#    if: ${{ needs.plan.outputs.exitcode == 2 }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#
+#      - name: Setup terraform
+#        uses: hashicorp/setup-terraform@v2
+#        with:
+#          terraform_wrapper: false
+#
+#      - name: Setup terragrunt
+#        uses: autero1/action-terragrunt@v1.2.0
+#        with:
+#          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+#
+#      - name: Setup sops
+#        uses: mdgreenwald/mozilla-sops-action@v1.4.0
+#
+#      - name: Configure CICD AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ env.CICD_AWS_REGION }}
+#
+#      - name: Decrypt files
+#        shell: pwsh
+#        working-directory: ${{ env.INFRA_ROOT }}
+#        run: |
+#          Get-ChildItem -Filter *.enc.json -Recurse | %{ sops -d $_.FullName > ( $_.FullName -replace ".enc.json$", ".json" ) }
+#
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ inputs.aws-region }}
+#
+#      - id: download-file-name
+#        shell: pwsh
+#        run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')" >> $Env:GITHUB_OUTPUT
+#
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: ${{ steps.download-file-name.outputs.value }}
+#          path: ${{ inputs.working-directory }}
+#
+#      - name: Terragrunt apply
+#        working-directory: ${{ inputs.working-directory }}
+#        run: terragrunt apply plan.out
