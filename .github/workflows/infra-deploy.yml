@@ -70,7 +70,7 @@ jobs:
       env: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
 
   group-2:
-    needs: [setup, group-2 ]
+    needs: [setup, group-1 ]
     uses: ./.github/workflows/print.yml
     strategy:
       matrix:
