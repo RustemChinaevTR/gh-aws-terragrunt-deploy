@@ -1,0 +1,11 @@
+name: print
+on:
+  workflow_call:
+    inputs:
+      path:
+        type: string
+jobs:
+  print:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.path }}'
