@@ -45,10 +45,7 @@ jobs:
   group-0:
     needs: setup
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'] }}
     uses: ./.github/workflows/print.yml
     with:
-      path: $${{ matrix.path }}
+      path: dummy-valuer
 
