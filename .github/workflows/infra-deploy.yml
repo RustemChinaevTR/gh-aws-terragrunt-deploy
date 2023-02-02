@@ -62,7 +62,6 @@ jobs:
   group-1:
     needs: [setup, group-0 ]
     uses: ./.github/workflows/print.yml
-    if: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'] != '[]' && fromJson(needs.setup.outputs.stacksGroups)['group-1'] != '' }}
     strategy:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
