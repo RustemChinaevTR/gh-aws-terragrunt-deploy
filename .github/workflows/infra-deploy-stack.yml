@@ -33,8 +33,6 @@ jobs:
 
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
 
       - name: Setup terragrunt
         uses: autero1/action-terragrunt@v1.2.0
@@ -121,8 +119,6 @@ jobs:
 
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
 
       - name: Setup terragrunt
         uses: autero1/action-terragrunt@v1.2.0
