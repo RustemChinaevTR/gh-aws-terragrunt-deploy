@@ -73,6 +73,7 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
         working-directory: ${{ inputs.working-directory }}
         run: terragrunt plan -detailed-exitcode -out=plan.out -input=false
+        continue-on-error: true
 
       - name: Terragrunt show plan
         env:
