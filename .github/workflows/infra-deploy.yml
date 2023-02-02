@@ -57,9 +57,10 @@ jobs:
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
       terragrunt-env-var: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
+    secrets: inherit
 
   group-1:
-    needs: [setup ]
+    needs: [setup, group-0 ]
     uses: ./.github/workflows/print.yml
     strategy:
       matrix:
