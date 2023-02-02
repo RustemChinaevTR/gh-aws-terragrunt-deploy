@@ -79,9 +79,19 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
+          $Plan = (terraform show -no-color plan.out | %{ 
+            if ($_ -match '^\s+([+-~])')
+            {
+              "$($matches[1])$matches[0]"
+            }
+            else
+            {
+              $_
+            }
+          } | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n"
           @"
           ``````diff
-          $((terraform show -no-color plan.out | %{ $_.Trim() } | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n")
+          $Plan
           ``````
           "@ >> $env:GITHUB_STEP_SUMMARY
 
