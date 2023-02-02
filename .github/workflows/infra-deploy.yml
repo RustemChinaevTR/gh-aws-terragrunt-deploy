@@ -44,7 +44,6 @@ jobs:
 
   group-0:
     needs: setup
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/print.yml
     with:
       path: dummy-valuer
