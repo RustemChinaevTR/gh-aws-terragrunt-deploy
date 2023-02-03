@@ -5,4 +5,12 @@
 !modify
 +add
 -remove
+'qwe
+`qwe
+#qwe
+$qwe
+%qwe
+^qwe
+&24qwer
+~qwerty
 ```
