@@ -102,10 +102,11 @@ jobs:
           **Path:** *${{ inputs.working-directory }}*
           <details>
           <summary>Generated plan</summary>
+          
           ``````diff
           $Plan
-          </details>
           ``````
+          </details>
           "@ >> $env:GITHUB_STEP_SUMMARY
 
       - id: upload-file-name
