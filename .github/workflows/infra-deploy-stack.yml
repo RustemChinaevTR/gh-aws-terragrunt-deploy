@@ -72,6 +72,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.aws-region }}
         working-directory: ${{ inputs.working-directory }}
+        shell: pwsh
         run: |
           $EAP = $ErrorActionPreference
           $ErrorActionPreference = 'continue'
