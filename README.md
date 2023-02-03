@@ -15,13 +15,13 @@ $qwe
 *QWERTY
 *QWERTY*
 ~qwerty
-(qwe
+(qwe)
 )qwe
 -qwe
 _qweq
 =qwe
-{qwe
-[qwe
+{qwe}
+[qwe]
 ]qwe
 \qwe
 |qwe
