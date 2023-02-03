@@ -95,16 +95,9 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
-          $Plan = (terraform show -no-color plan.out | %{
-            if ($_ -match '^\s+([+-~])')
-            {
-              "$($matches[1])$_"
-            }
-            else
-            {
-              $_
-            }
-          } | ?{$_ -notlike '[command]/home/runner/*' -and $_ -notlike '::debug::*'}) -join "`n"
+          $Plan = (terraform show -no-color plan.out | `
+            %{ $_ -replace '^  ' -replace '~', '!'}  | `
+            ?{ $_ -notlike '::debug::*' }) -join "`n"
           @"
           ``````diff
           $Plan
