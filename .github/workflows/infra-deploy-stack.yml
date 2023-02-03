@@ -81,6 +81,7 @@ jobs:
           then
             echo "status=synced" >> $GITHUB_OUTPUT
           elif [[ $RETURN_CODE -eq 2 ]]
+          then
             echo "status=outdated" >> $GITHUB_OUTPUT 
           else
             echo "status=error" >> $GITHUB_OUTPUT
