@@ -25,14 +25,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - id: setup
-        working-directory: ${{ env.INFRA_PATH }}
         shell: pwsh
         run: |
+          $ProjectPath = (Get-Location).Path
+          cd '${{ env.INFRA_PATH }}'
           $Stacks = Get-ChildItem -Filter "gh-deployment.properties" -Recurse | ForEach-Object {
             $Region = $_.FullName -like '*/global/*' ? 'global' :  (ConvertFrom-Json '${{ env.SHORT_REGION_MAP }}').'${{ inputs.aws-region }}'
             $Env = "a123456-$Region-${{ inputs.aws-environment }}"
             [pscustomobject]@{
-              Path = [System.IO.Path]::GetRelativePath((Get-Location).Path, $_.Directory.FullName)
+              Path = [System.IO.Path]::GetRelativePath($ProjectPath, $_.Directory.FullName)
               Env = $Env
               GithubEnvironment = (ConvertFrom-Json '${{ env.GITHUB_ENV_MAP }}').'${{ inputs.aws-environment }}'
               Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
@@ -52,25 +53,25 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'].*.Path }}
     with:
-      working-directory: ${{ format("{0}/{1}", env.INFRA_PATH, matrix.path) }}"
+      working-directory: ${{ matrix.path) }}"
       github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
       terragrunt-env-var: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
     secrets: inherit
 
-#  group-1:
-#    needs: [setup, group-0 ]
-#    uses: ./.github/workflows/infra-deploy-stack.yml
-#    if: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'] != '[]' && fromJson(needs.setup.outputs.stacksGroups)['group-1'] != '' }}
-#    strategy:
-#      matrix:
-#        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
-#    with:
-#      working-directory: '${{ env.INFRA_PATH }}/${{ matrix.path }}'
-#      github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
-#      aws-region: ${{ inputs.aws-region }}
-#      aws-assume-role: TODO
-#      terragrunt-env-var: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
-#    secrets: inherit
+  group-1:
+    needs: [setup, group-0 ]
+    uses: ./.github/workflows/infra-deploy-stack.yml
+    if: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'] != '[]' && fromJson(needs.setup.outputs.stacksGroups)['group-1'] != '' }}
+    strategy:
+      matrix:
+        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
+    with:
+      working-directory: '${{ env.INFRA_PATH }}/${{ matrix.path }}'
+      github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
+      aws-region: ${{ inputs.aws-region }}
+      aws-assume-role: TODO
+      terragrunt-env-var: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
+    secrets: inherit
 
