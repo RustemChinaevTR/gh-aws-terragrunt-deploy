@@ -23,7 +23,7 @@ env:
 jobs:
   plan:
     outputs:
-      exitcode: ${{ steps.plan.outputs.exitcode }}
+      status: ${{ steps.plan.outputs.status }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -125,7 +125,7 @@ jobs:
   apply:
     needs: plan
     environment: ${{ inputs.github-environment }}
-    if: ${{ needs.plan.outputs.exitcode == 2 }}
+    if: ${{ needs.plan.outputs.status == 'outdated' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
