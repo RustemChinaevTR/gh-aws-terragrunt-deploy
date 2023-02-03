@@ -2,6 +2,10 @@ name: Infrastructure deploy
 on:
   workflow_dispatch:
     inputs:
+      password:
+        type: secret
+      passwor:
+        type: password
       aws-environment:
         required: true
         type: choice
