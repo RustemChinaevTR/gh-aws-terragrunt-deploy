@@ -12,5 +12,7 @@ $qwe
 %qwe
 ^qwe
 &24qwer
+*QWERTY
+*QWERTY*
 ~qwerty
 ```
