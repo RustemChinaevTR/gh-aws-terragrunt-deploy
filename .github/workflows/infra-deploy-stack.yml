@@ -91,7 +91,7 @@ jobs:
       - name: Terragrunt show plan
         env:
           ENV: ${{ inputs.terragrunt-env-var }}
-        if: success() && ${{ steps.plan.outputs.status == 'outdated' }}
+        if: ${{ steps.plan.outputs.status == 'outdated' }}
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
@@ -112,12 +112,12 @@ jobs:
           "@ >> $env:GITHUB_STEP_SUMMARY
 
       - id: upload-file-name
-        if: success() && ${{ steps.plan.outputs.status == 'outdated' }}
+        if: ${{ steps.plan.outputs.status == 'outdated' }}
         shell: pwsh
         run: echo "value=$('${{ inputs.working-directory }}' -replace '/', '-')" >> $Env:GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v3
-        if: success() && ${{ steps.plan.outputs.status == 'outdated' }}
+        if: ${{ steps.plan.outputs.status == 'outdated' }}
         with:
           name: ${{ steps.upload-file-name.outputs.value }}
           path: ${{ inputs.working-directory }}/plan.out
