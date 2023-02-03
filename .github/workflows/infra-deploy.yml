@@ -52,7 +52,7 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'].*.Path }}
     with:
-      working-directory: ${{ matrix.path }}
+      working-directory: '${{ env.INFRA_PATH}}/${{ matrix.path }}'
       github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
@@ -67,21 +67,10 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
     with:
-      working-directory: ${{ matrix.path }}
+      working-directory: '${{ env.INFRA_PATH}}/${{ matrix.path }}'
       github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
       terragrunt-env-var: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
     secrets: inherit
-
-  group-2:
-    needs: [setup, group-1 ]
-    if: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-2'] != '[]' && fromJson(needs.setup.outputs.stacksGroups)['group-2'] != '' }}
-    uses: ./.github/workflows/print.yml
-    strategy:
-      matrix:
-        path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-2'].*.Path }}
-    with:
-      path: ${{ matrix.path }}
-      env: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].Env }}
 
