@@ -52,6 +52,7 @@ jobs:
           aws-region: ${{ env.CICD_AWS_REGION }}
       - run: |
           echo '${{ toJson(inputs)}}'
+          pwd
           ls
 
       - name: Decrypt files
