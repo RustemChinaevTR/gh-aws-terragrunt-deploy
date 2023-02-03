@@ -100,7 +100,11 @@ jobs:
             ?{ $_ -notlike '::debug::*' }) -join "`n"
           @"
           ``````diff
+          **Path:** *${{ inputs.working-directory }}*
+          <details>
+          <summary>Generated plan</summary>
           $Plan
+          </details>
           ``````
           "@ >> $env:GITHUB_STEP_SUMMARY
 
