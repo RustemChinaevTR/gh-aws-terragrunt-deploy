@@ -76,7 +76,7 @@ jobs:
     secrets: inherit
 
   group-2:
-    needs: setup
+    needs: [setup, group-1]
     uses: ./.github/workflows/infra-deploy-stack.yml
     if: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-2'] != '[]' && fromJson(needs.setup.outputs.stacksGroups)['group-2'] != '' }}
     strategy:
@@ -91,7 +91,7 @@ jobs:
     secrets: inherit
 
   group-3:
-    needs: setup
+    needs: [setup, group-2]
     uses: ./.github/workflows/infra-deploy-stack.yml
     if: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-3'] != '[]' && fromJson(needs.setup.outputs.stacksGroups)['group-3'] != '' }}
     strategy:
