@@ -72,17 +72,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.aws-region }}
         working-directory: ${{ inputs.working-directory }}
-        shell: pwsh
         run: |
-          $EAP = $ErrorActionPreference
-          $ErrorActionPreference = 'continue'
+          set +e
           terragrunt plan -detailed-exitcode -out=plan.out -input=false
-          $TG_EXIT_CODE = $LASTEXITCODE
-          $ErrorActionPreference = $EAP
-          Write-Host "Terragrunt exit code: $TG_EXIT_CODE" -Color Cyan 
-          if ($TG_EXIT_CODE -eq 1) { exit $TG_EXIT_CODE }
-          echo "outdated=$($TG_EXIT_CODE -eq 2)" >> $Env:GITHUB_OUTPUT
-      - run: echo '${{ steps.plan.outputs.outdated }}'
+          RETURN_CODE=$?
+          set -e
+          if [[ $RETURN_CODE -eq 0 ]]
+          then
+            echo "status=synced" >> $GITHUB_OUTPUT
+          elif [[ $RETURN_CODE -eq 2 ]]
+            echo "status=outdated" >> $GITHUB_OUTPUT 
+          else
+            echo "status=error" >> $GITHUB_OUTPUT
+          fi
+
+      - run: echo '${{ steps.plan.outputs.status }}'
 #
 #      - name: Terragrunt show plan
 #        env:
