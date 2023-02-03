@@ -52,7 +52,7 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-0'].*.Path }}
     with:
-      working-directory: '${{ env.INFRA_PATH}}/${{ matrix.path }}'
+      working-directory: '${{ env.INFRA_PATH }}/${{ matrix.path }}'
       github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
@@ -67,7 +67,7 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
     with:
-      working-directory: '${{ env.INFRA_PATH}}/${{ matrix.path }}'
+      working-directory: '${{ env.INFRA_PATH }}/${{ matrix.path }}'
       github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
