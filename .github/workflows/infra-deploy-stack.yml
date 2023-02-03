@@ -76,8 +76,8 @@ jobs:
           $EAP = $ErrorActionPreference
           $ErrorActionPreference = 'continue'
           terragrunt plan -detailed-exitcode -out=plan.out -input=false
-          $ErrorActionPreference = $EAP
           $TG_EXIT_CODE = $LASTEXITCODE
+          $ErrorActionPreference = $EAP
           Write-Host "Terragrunt exit code: $TG_EXIT_CODE" -Color Cyan 
           if ($TG_EXIT_CODE -eq 1) { exit $TG_EXIT_CODE }
           echo "outdated=$($TG_EXIT_CODE -eq 2)" >> $Env:GITHUB_OUTPUT
