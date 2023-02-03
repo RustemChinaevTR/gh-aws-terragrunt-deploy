@@ -50,10 +50,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.CICD_AWS_REGION }}
-      - run: |
-          echo '${{ toJson(inputs)}}'
-          pwd
-          ls
 
       - name: Decrypt files
         shell: pwsh
