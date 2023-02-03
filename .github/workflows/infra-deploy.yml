@@ -26,14 +26,13 @@ jobs:
         uses: actions/checkout@v3
       - id: setup
         shell: pwsh
+        working-directory: ${{ env.INFRA_PATH }}
         run: |
-          $ProjectPath = (Get-Location).Path
-          cd '${{ env.INFRA_PATH }}'
           $Stacks = Get-ChildItem -Filter "gh-deployment.properties" -Recurse | ForEach-Object {
             $Region = $_.FullName -like '*/global/*' ? 'global' :  (ConvertFrom-Json '${{ env.SHORT_REGION_MAP }}').'${{ inputs.aws-region }}'
             $Env = "a123456-$Region-${{ inputs.aws-environment }}"
             [pscustomobject]@{
-              Path = [System.IO.Path]::GetRelativePath($ProjectPath, $_.Directory.FullName)
+              Path = $_.Directory.FullName
               Env = $Env
               GithubEnvironment = (ConvertFrom-Json '${{ env.GITHUB_ENV_MAP }}').'${{ inputs.aws-environment }}'
               Properties = Get-Content $_.FullName -Raw | ConvertFrom-StringData
