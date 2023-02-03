@@ -68,7 +68,7 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.stacksGroups)['group-1'].*.Path }}
     with:
-      working-directory: {{ matrix.path }}
+      working-directory: ${{ matrix.path }}
       github-environment: ${{ fromJson(needs.setup.outputs.stacks)[matrix.path][0].GithubEnvironment }}
       aws-region: ${{ inputs.aws-region }}
       aws-assume-role: TODO
